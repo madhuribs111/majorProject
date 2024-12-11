@@ -2,61 +2,109 @@ import React, { useEffect, useState } from "react";
 import {
   Text,
   View,
-  StyleSheet, Image,
-  ImageBackground, 
-  TouchableOpacity, Modal
-
+  StyleSheet,
+  Image,
+  ImageBackground,
+  TouchableOpacity,
+  Modal,
+  FlatList,
 } from "react-native";
 import { getFromSecureStore } from "./util/secureStore";
 import { BlurView } from "expo-blur"; // Install expo-blur
-//import { Ionicons } from "@expo/vector-icons"; // For profile icon
-import { useRouter } from "expo-router";
-import QRCode from "react-native-qrcode-svg";
-//import { BarCodeScanner } from "expo-barcode-scanner";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import axios from "axios";
+import { API_URL } from "./login";
 
 const Home = () => {
+ type Sensor={
+ id: number,
+  data: string[]   
+  }
   const [isModalVisible, setModalVisible] = useState(false);
-  const [username, setUsername] = useState<string |null>(null)
+  const [username, setUsername] = useState<string | null>(null);
+  const [sensors, setSensors] = useState<Sensor[]>([]); // Array to store connected sensors
+  const { scannedData } = useLocalSearchParams(); // Retrieve the scanned data
   const router = useRouter();
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
-const handleScanner  =()=>{
-  router.push("/cam")
-}
-useEffect(()=>{
-  const fetchedUser= async()=>{
-    const usernameToDisplay = await getFromSecureStore("username");
-    console.log(usernameToDisplay);
-    setUsername(usernameToDisplay);
-  
+
+  const handleScanner = () => {
+    router.push("/cam");
+  };
+
+  useEffect(() => {
+    const fetchedUser = async () => {
+      const usernameToDisplay = await getFromSecureStore("username");
+      setUsername(usernameToDisplay);
+    };
+    fetchedUser();
+  }, []);
+
+ // Update sensors when a new one is scanned
+ useEffect(() => {
+  if (scannedData) {
+    setSensors((prevSensors) => [
+      ...prevSensors,
+      {
+        id: prevSensors.length + 1,
+        data: Array.isArray(scannedData) ? scannedData : [scannedData], // Ensure data is an array
+      },
+    ]);
   }
-fetchedUser();
-},[])
+}, [scannedData]);
+
   return (
-    <ImageBackground 
+    <ImageBackground
       source={require("@/assets/images/login.jpg")}
       style={styles.image}
       resizeMode="cover"
     >
+         {/* Sensor Count */}
+         <View style={styles.sensorCountContainer}>
+        <Text style={styles.sensorCountText}>
+          Connected Sensors: {sensors.length}
+        </Text>
+      </View>
+
+   
+
       {/* Profile Icon */}
-      <TouchableOpacity
-        style={styles.profileIcon}
-        onPress={toggleModal}
-      
-      >
-        <Image source={require("@/assets/images/profile.webp")}  style={styles.iconImage}></Image>
-       
+      <TouchableOpacity style={styles.profileIcon} onPress={toggleModal}>
+        <Image
+          source={require("@/assets/images/profile.webp")}
+          style={styles.iconImage}
+        />
       </TouchableOpacity>
 
-      <View style={styles.container}>
-        <Text style={styles.mainText}>
-          "Oops! Seems like you're not connected to any sensors."
-        </Text>
-        <Text onPress = {handleScanner}
-        style={styles.subText}>Scan here to connect</Text>
-      </View>
+      {/* Display Sensors Data */}
+      {sensors.length > 0 ? (
+        <View style={styles.scannedDataContainer}>
+          <FlatList
+            data={sensors}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.sensorContainer}>
+                <Text style={styles.scannedDataTitle}>Sensor {item.id}:</Text>
+                <Text style={styles.scannedDataText}>{item.data}</Text>
+              </View>
+            )}
+          />
+          <Text onPress={handleScanner} style={styles.subText}>
+            Scan here to connect another sensor
+          </Text>
+        </View>
+      ) : (
+        <View style={styles.container}>
+          <Text style={styles.mainText}>
+            Oops! Seems like you're not connected to any sensors.
+          </Text>
+          <Text onPress={handleScanner} style={styles.subText}>
+            Scan here to connect
+          </Text>
+        </View>
+      )}
 
       {/* Modal for Profile & Settings */}
       <Modal
@@ -72,7 +120,6 @@ fetchedUser();
               style={styles.panelOption}
               onPress={() => {
                 setModalVisible(false);
-               // router.navigate("/profile");
               }}
             >
               <Text style={styles.optionText}>Profile</Text>
@@ -81,7 +128,6 @@ fetchedUser();
               style={styles.panelOption}
               onPress={() => {
                 setModalVisible(false);
-               // router.navigate("/settings");
               }}
             >
               <Text style={styles.optionText}>Settings</Text>
@@ -99,10 +145,34 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  sensorList: {
+    marginTop: 100,
+    flex: 1,
+    width: "90%",
+  },  bottomContainer: {
+    position: "absolute",
+    bottom: 40,
+    width: "100%",
+    alignItems: "center",
+  },
+  sensorCountContainer: {
+    position: "absolute",
+    top: 30,
+    alignSelf: "center",
+    padding: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 10,
+  },
+  sensorCountText: {
+    fontSize: 18,
+    color: "white",
+    fontWeight: "bold",
+    top: 30
+  },
   iconImage: {
     width: 40,
     height: 40,
-    borderRadius: 20, // Makes the image circular,
+    borderRadius: 20,
   },
   profileIcon: {
     position: "absolute",
@@ -112,18 +182,44 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     paddingHorizontal: 20,
+    marginBottom: 50
   },
   mainText: {
     fontSize: 24,
     color: "white",
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 10,
+
   },
   subText: {
     fontSize: 16,
     color: "orange",
     fontStyle: "italic",
+    textAlign: "center",
+  },
+  scannedDataContainer: {
+    marginTop: 50,
+
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  sensorContainer: {
+    marginTop: 50,
+    padding: 10,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 10,
+    width: "100%",
+  },
+  scannedDataTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "orange",
+    marginBottom: 5,
+  },
+  scannedDataText: {
+    fontSize: 16,
+    color: "white",
     textAlign: "center",
   },
   blurView: {
@@ -153,4 +249,5 @@ const styles = StyleSheet.create({
     color: "#007BFF",
   },
 });
+
 export default Home;

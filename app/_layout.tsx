@@ -5,8 +5,8 @@ import { StatusBar } from "expo-status-bar"
 const RootLayout =()=>{
   return (
     <>
-  <Stack>
-<Stack.Screen name = "index"/>
+  <Stack screenOptions={{headerShown: false}}>
+<Stack.Screen name = "index" />
 <Stack.Screen name="login" />
 <Stack.Screen name = "signup" /> 
 <Stack.Screen name="home" /> 
