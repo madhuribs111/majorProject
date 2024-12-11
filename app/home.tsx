@@ -7,8 +7,10 @@ import {
   ImageBackground,
   TouchableOpacity,
   Modal,
+  ScrollView, // Import ScrollView
 } from "react-native";
 import { Card } from "../components/card.jsx";
+import FloatingActionButton from "../components/floatingButton.jsx";
 import { getFromSecureStore } from "./util/secureStore";
 import { BlurView } from "expo-blur"; // Install expo-blur
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -83,7 +85,6 @@ const Home = () => {
         });
         setSensorData(response.data.sensors); // Handle the data
         console.log(response.data.sensors); // Log the fetched data to check
-
       } catch (err) {
         console.error("Error fetching sensor data:", err);
       }
@@ -100,31 +101,40 @@ const Home = () => {
       style={styles.image}
       resizeMode="cover"
     >
-      {/* Sensor Count */}
+     
+
+      {/* Scrollable Container for Sensor Cards */}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+
+         {/* Sensor Count */}
       <View style={styles.sensorCountContainer}>
         <Text style={styles.sensorCountText}>
           Connected Sensors: {sensors.length}
         </Text>
-      </View>
-
-      {/* Render sensor data if available */}
-      {sensorData.length > 0 &&
-        sensorData.map((sensor: SensorData) => (
-          <Card
-            key={sensor.sensor_id}
-            sensorId={sensor.sensor_id}
-            sensorName={sensor.name}
-            location={sensor.location} // Pass location here
-          />
-        ))}
+        </View>
+        {/* Render sensor data if available */}
+        {sensorData.length > 0 &&
+          sensorData.map((sensor: SensorData) => (
+            <Card
+              key={sensor.sensor_id}
+              sensorId={sensor.sensor_id}
+              sensorName={sensor.name}
+              location={sensor.location} // Pass location here
+            />
+          ))}
+      </ScrollView>
 
       {/* Profile Icon */}
+      
+      <FloatingActionButton handleScan={handleScanner} />
+ 
       <TouchableOpacity style={styles.profileIcon} onPress={toggleModal}>
         <Image
           source={require("@/assets/images/profile.webp")}
           style={styles.iconImage}
         />
       </TouchableOpacity>
+     
 
       {/* Modal for Profile & Settings */}
       <Modal
@@ -169,7 +179,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 30,
     alignSelf: "center",
-    padding: 10,
+   
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 10,
   },
@@ -177,6 +187,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "white",
     fontWeight: "bold",
+  },
+  scrollContainer: {
+    marginTop:100,
+    flexGrow: 1,
+    marginBottom:50,
+    justifyContent: "flex-start",
+    alignItems:"center",
+    paddingBottom: 20, // Add some padding at the bottom to ensure content doesn't get clipped
   },
   iconImage: {
     width: 40,
