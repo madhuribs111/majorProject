@@ -21,7 +21,6 @@ const Cam = () => {
       const token = await getFromSecureStore("authToken");
       const user = await getFromSecureStore("username");
       setAuthToken(token);
-      console.log(authToken);
       setUsername(user);
     };
     fetchData();
@@ -31,12 +30,17 @@ const Cam = () => {
     if (!qrLock.current) {
       qrLock.current = true;
       console.log("Raw Scanned Data:", data);
+      const cleanedData = data.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();  // Remove zero-width characters
+
+  console.log("data type: ",typeof data)
   
       try {
         // Try to parse the data as JSON
         let parsedData;
         try {
-          parsedData = JSON.parse(data); // Parse JSON if possible
+          parsedData = JSON.parse(cleanedData); // Parse JSON if possible
+          console.log("json type?: ",typeof parsedData);
+          console.log("parsed data: ",parsedData);
         } catch (e) {
           console.warn("Failed to parse data as JSON, sending as raw string:", e);
           //parsedData = { sensor_data: data }; // Fallback: send raw string as a sensor_data key

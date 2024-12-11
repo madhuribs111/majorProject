@@ -13,8 +13,6 @@ import { getFromSecureStore } from "./util/secureStore";
 import { BlurView } from "expo-blur"; // Install expo-blur
 import { useRouter, useLocalSearchParams } from "expo-router";
 import axios from "axios";
-import { API_URL } from "./login";
-
 const Home = () => {
  type Sensor={
  id: number,
