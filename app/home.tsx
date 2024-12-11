@@ -7,12 +7,12 @@ import {
   ImageBackground,
   TouchableOpacity,
   Modal,
-  ScrollView, // Import ScrollView
+  ScrollView,
 } from "react-native";
 import { Card } from "../components/card.jsx";
 import FloatingActionButton from "../components/floatingButton.jsx";
 import { getFromSecureStore } from "./util/secureStore";
-import { BlurView } from "expo-blur"; // Install expo-blur
+import { BlurView } from "expo-blur";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 
@@ -32,11 +32,11 @@ interface SensorData {
 const Home = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
-  const [sensorData, setSensorData] = useState<SensorData[]>([]); // Make this an array of SensorData
+  const [sensorData, setSensorData] = useState<SensorData[]>([]);
   const [email, setEmail] = useState<string | null>(null);
-  const [sensors, setSensors] = useState<{ id: number; data: string[] }[]>([]); // Array to store connected sensors
-  const { scannedData } = useLocalSearchParams(); // Retrieve the scanned data
-  const [authToken, setAuthToken] = useState<string | null>(null); // State to store authToken
+  const [sensors, setSensors] = useState<{ id: number; data: string[] }[]>([]);
+  const { scannedData } = useLocalSearchParams();
+  const [authToken, setAuthToken] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -60,31 +60,29 @@ const Home = () => {
     fetchedUser();
   }, []);
 
-  // Update sensors when a new one is scanned
   useEffect(() => {
     if (scannedData) {
       setSensors((prevSensors) => [
         ...prevSensors,
         {
           id: prevSensors.length + 1,
-          data: Array.isArray(scannedData) ? scannedData : [scannedData], // Ensure data is an array
+          data: Array.isArray(scannedData) ? scannedData : [scannedData],
         },
       ]);
     }
   }, [scannedData]);
 
   useEffect(() => {
-    // Use an async function within useEffect
     const fetchData = async () => {
       try {
         const response = await axios.get("https://aquavitals.onrender.com/v1/user/home", {
           headers: {
-            Authorization: `Bearer ${authToken}`, // Replace authToken with actual token
+            Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/json",
           },
         });
-        setSensorData(response.data.sensors); // Handle the data
-        console.log(response.data.sensors); // Log the fetched data to check
+        setSensorData(response.data.sensors);
+        console.log(response.data.sensors);
       } catch (err) {
         console.error("Error fetching sensor data:", err);
       }
@@ -93,50 +91,41 @@ const Home = () => {
     if (authToken) {
       fetchData();
     }
-  }, [authToken]); // Re-fetch if authToken changes
+  }, [authToken]);
 
   return (
+    
     <ImageBackground
       source={require("@/assets/images/login.jpg")}
       style={styles.image}
       resizeMode="cover"
     >
-     
-
-      {/* Scrollable Container for Sensor Cards */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-
-         {/* Sensor Count */}
-      <View style={styles.sensorCountContainer}>
-        <Text style={styles.sensorCountText}>
-          Connected Sensors: {sensors.length}
-        </Text>
+        <View style={styles.sensorCountContainer}>
+          <Text style={styles.sensorCountText}>
+            Connected Sensors: {sensorData.length}
+          </Text>
         </View>
-        {/* Render sensor data if available */}
         {sensorData.length > 0 &&
           sensorData.map((sensor: SensorData) => (
             <Card
               key={sensor.sensor_id}
               sensorId={sensor.sensor_id}
               sensorName={sensor.name}
-              location={sensor.location} // Pass location here
+              location={sensor.location}
             />
           ))}
       </ScrollView>
 
-      {/* Profile Icon */}
-      
- 
       <TouchableOpacity style={styles.profileIcon} onPress={toggleModal}>
         <Image
           source={require("@/assets/images/profile.webp")}
           style={styles.iconImage}
         />
       </TouchableOpacity>
-     
+
       <FloatingActionButton handleScan={handleScanner} />
 
-      {/* Modal for Profile & Settings */}
       <Modal
         visible={isModalVisible}
         transparent
@@ -176,12 +165,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   sensorCountContainer: {
-    position: "absolute",
-    top: 30,
+    marginVertical: 10,
     alignSelf: "center",
-   
+    top: 5,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 10,
+    padding: 10,
   },
   sensorCountText: {
     fontSize: 18,
@@ -189,12 +178,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   scrollContainer: {
-    marginTop:100,
     flexGrow: 1,
-    marginBottom:50,
-    justifyContent: "flex-start",
-    alignItems:"center",
-    paddingBottom: 20, // Add some padding at the bottom to ensure content doesn't get clipped
+    top: 40,
+    alignItems: "center",
+    paddingBottom: 20,
   },
   iconImage: {
     width: 40,

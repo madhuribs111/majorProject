@@ -2,8 +2,7 @@ import React from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons"; // You can use any icon package
 
-const FloatingActionButton = (props) => {
-  
+const FloatingActionButton = (props) => { 
 
   return (
     <View style={styles.container}>
@@ -17,6 +16,8 @@ const FloatingActionButton = (props) => {
 const styles = StyleSheet.create({
     container: {
       flex: 1,
+      marginLeft: 20,
+      left: 170,
       justifyContent: 'flex-end', 
     },
     fab: {

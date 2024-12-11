@@ -4,6 +4,8 @@ export function Card({sensorId, sensorName, location}) {
         <View style={styles.card}>
           <Text style={styles.sensorId}>Sensor ID: {sensorId}</Text>
           <Text style={styles.sensorName}>Sensor Name: {sensorName}</Text>
+          <Text style={styles.location}>Sensor Location: {location}</Text>
+
          
         </View>
       );
