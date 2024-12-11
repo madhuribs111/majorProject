@@ -126,7 +126,6 @@ const Home = () => {
 
       {/* Profile Icon */}
       
-      <FloatingActionButton handleScan={handleScanner} />
  
       <TouchableOpacity style={styles.profileIcon} onPress={toggleModal}>
         <Image
@@ -135,6 +134,7 @@ const Home = () => {
         />
       </TouchableOpacity>
      
+      <FloatingActionButton handleScan={handleScanner} />
 
       {/* Modal for Profile & Settings */}
       <Modal
