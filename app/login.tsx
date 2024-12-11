@@ -53,6 +53,7 @@ const Login = () => {
         await saveToSecureStore("username", username);
         await saveToSecureStore("password", password);
         await saveToSecureStore("authToken", response.data.authToken)
+        await saveToSecureStore("email", response.data.email)
         console.log("userename",username);
         router.push("/home"); // Navigate to home
       } else {

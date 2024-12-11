@@ -7,21 +7,35 @@ import {
   ImageBackground,
   TouchableOpacity,
   Modal,
-  FlatList,
 } from "react-native";
+import { Card } from "../components/card.jsx";
 import { getFromSecureStore } from "./util/secureStore";
 import { BlurView } from "expo-blur"; // Install expo-blur
 import { useRouter, useLocalSearchParams } from "expo-router";
 import axios from "axios";
+
+interface SensorData {
+  sensor_id: string;
+  name: string;
+  location: string;
+  data: {
+    do: string;
+    temperature: string;
+    humidity: string;
+  };
+  database_url: string;
+  web_token: string;
+}
+
 const Home = () => {
- type Sensor={
- id: number,
-  data: string[]   
-  }
   const [isModalVisible, setModalVisible] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
-  const [sensors, setSensors] = useState<Sensor[]>([]); // Array to store connected sensors
+  const [sensorData, setSensorData] = useState<SensorData[]>([]); // Make this an array of SensorData
+  const [email, setEmail] = useState<string | null>(null);
+  const [sensors, setSensors] = useState<{ id: number; data: string[] }[]>([]); // Array to store connected sensors
   const { scannedData } = useLocalSearchParams(); // Retrieve the scanned data
+  const [authToken, setAuthToken] = useState<string | null>(null); // State to store authToken
+
   const router = useRouter();
 
   const toggleModal = () => {
@@ -35,23 +49,50 @@ const Home = () => {
   useEffect(() => {
     const fetchedUser = async () => {
       const usernameToDisplay = await getFromSecureStore("username");
+      const email = await getFromSecureStore("email");
+      const token = await getFromSecureStore("authToken");
+      setAuthToken(token);
+      setEmail(email);
       setUsername(usernameToDisplay);
     };
     fetchedUser();
   }, []);
 
- // Update sensors when a new one is scanned
- useEffect(() => {
-  if (scannedData) {
-    setSensors((prevSensors) => [
-      ...prevSensors,
-      {
-        id: prevSensors.length + 1,
-        data: Array.isArray(scannedData) ? scannedData : [scannedData], // Ensure data is an array
-      },
-    ]);
-  }
-}, [scannedData]);
+  // Update sensors when a new one is scanned
+  useEffect(() => {
+    if (scannedData) {
+      setSensors((prevSensors) => [
+        ...prevSensors,
+        {
+          id: prevSensors.length + 1,
+          data: Array.isArray(scannedData) ? scannedData : [scannedData], // Ensure data is an array
+        },
+      ]);
+    }
+  }, [scannedData]);
+
+  useEffect(() => {
+    // Use an async function within useEffect
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("https://aquavitals.onrender.com/v1/user/home", {
+          headers: {
+            Authorization: `Bearer ${authToken}`, // Replace authToken with actual token
+            "Content-Type": "application/json",
+          },
+        });
+        setSensorData(response.data.sensors); // Handle the data
+        console.log(response.data.sensors); // Log the fetched data to check
+
+      } catch (err) {
+        console.error("Error fetching sensor data:", err);
+      }
+    };
+
+    if (authToken) {
+      fetchData();
+    }
+  }, [authToken]); // Re-fetch if authToken changes
 
   return (
     <ImageBackground
@@ -59,14 +100,23 @@ const Home = () => {
       style={styles.image}
       resizeMode="cover"
     >
-         {/* Sensor Count */}
-         <View style={styles.sensorCountContainer}>
+      {/* Sensor Count */}
+      <View style={styles.sensorCountContainer}>
         <Text style={styles.sensorCountText}>
           Connected Sensors: {sensors.length}
         </Text>
       </View>
 
-   
+      {/* Render sensor data if available */}
+      {sensorData.length > 0 &&
+        sensorData.map((sensor: SensorData) => (
+          <Card
+            key={sensor.sensor_id}
+            sensorId={sensor.sensor_id}
+            sensorName={sensor.name}
+            location={sensor.location} // Pass location here
+          />
+        ))}
 
       {/* Profile Icon */}
       <TouchableOpacity style={styles.profileIcon} onPress={toggleModal}>
@@ -75,34 +125,6 @@ const Home = () => {
           style={styles.iconImage}
         />
       </TouchableOpacity>
-
-      {/* Display Sensors Data */}
-      {sensors.length > 0 ? (
-        <View style={styles.scannedDataContainer}>
-          <FlatList
-            data={sensors}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.sensorContainer}>
-                <Text style={styles.scannedDataTitle}>Sensor {item.id}:</Text>
-                <Text style={styles.scannedDataText}>{item.data}</Text>
-              </View>
-            )}
-          />
-          <Text onPress={handleScanner} style={styles.subText}>
-            Scan here to connect another sensor
-          </Text>
-        </View>
-      ) : (
-        <View style={styles.container}>
-          <Text style={styles.mainText}>
-            Oops! Seems like you're not connected to any sensors.
-          </Text>
-          <Text onPress={handleScanner} style={styles.subText}>
-            Scan here to connect
-          </Text>
-        </View>
-      )}
 
       {/* Modal for Profile & Settings */}
       <Modal
@@ -143,16 +165,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  sensorList: {
-    marginTop: 100,
-    flex: 1,
-    width: "90%",
-  },  bottomContainer: {
-    position: "absolute",
-    bottom: 40,
-    width: "100%",
-    alignItems: "center",
-  },
   sensorCountContainer: {
     position: "absolute",
     top: 30,
@@ -165,7 +177,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "white",
     fontWeight: "bold",
-    top: 30
   },
   iconImage: {
     width: 40,
@@ -176,49 +187,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 50,
     right: 20,
-  },
-  container: {
-    alignItems: "center",
-    paddingHorizontal: 20,
-    marginBottom: 50
-  },
-  mainText: {
-    fontSize: 24,
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
-
-  },
-  subText: {
-    fontSize: 16,
-    color: "orange",
-    fontStyle: "italic",
-    textAlign: "center",
-  },
-  scannedDataContainer: {
-    marginTop: 50,
-
-    padding: 20,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  sensorContainer: {
-    marginTop: 50,
-    padding: 10,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    borderRadius: 10,
-    width: "100%",
-  },
-  scannedDataTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "orange",
-    marginBottom: 5,
-  },
-  scannedDataText: {
-    fontSize: 16,
-    color: "white",
-    textAlign: "center",
   },
   blurView: {
     flex: 1,
