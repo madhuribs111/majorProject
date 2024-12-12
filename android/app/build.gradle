@@ -1,9 +1,13 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-
+apply plugin: 'com.google.gms.google-services' 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 
+plugins{
+    id 'com.android.application'
+    id 'com.google.gms.google-services'
+}
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -89,7 +93,7 @@ android {
     namespace 'com.anonymous.MyAuthApp'
     defaultConfig {
         applicationId 'com.anonymous.MyAuthApp'
-        minSdkVersion rootProject.ext.minSdkVersion
+        minSdkVersion 21
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0.0"
@@ -149,7 +153,7 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-
+    implementation platform('com.google.firebase:firebase-bom:33.7.0')
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";
     def isWebpAnimatedEnabled = (findProperty('expo.webp.animated') ?: "") == "true";

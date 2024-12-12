@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "702640872865",
+    "firebase_url": "https://esp32-firebase-demo-39ba1-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "esp32-firebase-demo-39ba1",
+    "storage_bucket": "esp32-firebase-demo-39ba1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:702640872865:android:5a87137f7266f00f62bfe0",
+        "android_client_info": {
+          "package_name": "com.company.aquavitals"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZXSAsn723-dO3anS1-yGYcpP-V_gtxVY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

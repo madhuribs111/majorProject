@@ -47,7 +47,11 @@ const Home = () => {
   const handleScanner = () => {
     router.push("/cam");
   };
+  
+  const handleCardClick = ()=>{
+    router.navigate("/sensor")
 
+  }
   useEffect(() => {
     const fetchedUser = async () => {
       const usernameToDisplay = await getFromSecureStore("username");
@@ -113,6 +117,8 @@ const Home = () => {
               sensorId={sensor.sensor_id}
               sensorName={sensor.name}
               location={sensor.location}
+              onClick={handleCardClick}
+              
             />
           ))}
       </ScrollView>
