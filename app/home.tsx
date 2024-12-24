@@ -25,8 +25,8 @@ interface SensorData {
     temperature: string;
     humidity: string;
   };
-  database_url: string;
-  web_token: string;
+  // database_url: string;
+  // web_token: string;
 }
 
 const Home = () => {
@@ -48,10 +48,17 @@ const Home = () => {
     router.push("/cam");
   };
   
-  const handleCardClick = ()=>{
-    router.navigate("/sensor")
+  const handleCardClick = (sensorId: string) => {
+    router.push({
+      pathname: "/sensor",
+      params: { sensorId }, // Pass sensor ID as parameter
+    });
+  };
+  
+  // const handleCardClick = ()=>{
+  //   router.navigate("/sensor")
 
-  }
+  // }
   useEffect(() => {
     const fetchedUser = async () => {
       const usernameToDisplay = await getFromSecureStore("username");
@@ -113,13 +120,21 @@ const Home = () => {
         {sensorData.length > 0 &&
           sensorData.map((sensor: SensorData) => (
             <Card
-              key={sensor.sensor_id}
-              sensorId={sensor.sensor_id}
-              sensorName={sensor.name}
-              location={sensor.location}
-              onClick={handleCardClick}
+  key={sensor.sensor_id}
+  sensorId={sensor.sensor_id}
+  sensorName={sensor.name}
+  location={sensor.location}
+  onClick={() => handleCardClick(sensor.sensor_id)} // Pass the sensor ID dynamically
+/>
+
+            // <Card
+            //   key={sensor.sensor_id}
+            //   sensorId={sensor.sensor_id}
+            //   sensorName={sensor.name}
+            //   location={sensor.location}
+            //   onClick={handleCardClick}
               
-            />
+            // />
           ))}
       </ScrollView>
 

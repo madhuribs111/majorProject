@@ -61,12 +61,12 @@ const Login = () => {
         alert("Invalid login. Please try again.");
       }
     } catch (err) {
-      console.error(err);
+     // console.error(err);
       // Display alert for error scenarios
       // if (err.response?.data?.message) {
       //   alert(err.response.data.message); // Backend-provided error message
       // } else {
-      alert("An error occurred. Please check your network and try again.");
+      alert("Invalid login. Please try again.");
     }
   };
 
